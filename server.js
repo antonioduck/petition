@@ -1,11 +1,15 @@
 const express = require("express");
 const app = express();
-const bd = require("./db");
+const db = require("./db");
 
 const hb = require("express-handlebars");
+const cookieParser = require("cookie-parser");
 
 app.engine("handlebars", hb.engine());
 app.set("view engine", "handlebars");
+
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
 app.use(express.static("./public"));
 
@@ -14,7 +18,42 @@ app.get("/", (req, res) => {
 });
 
 app.get("/petition", (req, res) => {
+  if (req.cookies.signed === "1") {
+    return res.redirect("/signed");
+  }
   res.render("petition", { title: "My Petition" });
+});
+
+app.post("/petition", (req, res) => {
+  const data = req.body;
+  console.log(data);
+  db.addSignature(data.first, data.last, data.signature)
+    .then(() => {
+      console.log("addSignature worked");
+      //set the cookie
+      res.cookie("signed", 1);
+      //redirect if successful
+      res.redirect("/signed");
+    })
+    .catch((err) => {
+      console.log("An error occured", err);
+      const error = {
+        message: "Are you sure , that u filled all fields?",
+      };
+
+      res.render("petition", {
+        title: "Something went wrong . Pls try again",
+        error,
+      });
+    });
+});
+
+app.get("/signed", (req, res) => {
+  res.render("signed", { title: "My signed users" });
+});
+
+app.get("/signers", (req, res) => {
+  res.render("signers", { title: "List of users who signed" });
 });
 
 app.get("/cities", (req, res) => {

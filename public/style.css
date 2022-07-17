@@ -1,3 +1,17 @@
 body {
   background-color: yellow;
 }
+
+#sig-canvas {
+  border: 2px dotted #cccccc;
+  border-radius: 15px;
+  cursor: crosshair;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}

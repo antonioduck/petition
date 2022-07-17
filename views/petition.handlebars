@@ -1,1 +1,65 @@
-<hi>Welcome to the petition </hi>
+
+<div class="container">
+
+  <hi>Welcome to the petition </hi>
+
+  <P>In order to move forward , you need to sign up(with name , surmane and
+    signature ) and press the submit button</P>
+
+  <form method="post" id="form">
+
+    <div class="name-field">
+      <label for="first">First name:</label>
+      <input type="text" value="" name="first" id="first" />
+      <label for="last">Last name:</label>
+      <input type="text" value="" name="last" id="last" />
+
+    </div>
+    <div class="sign-canvas">
+      <canvas id="sig-canvas" width="620" height="160"></canvas>
+      {{! <canvas id="canvas" width="300" height="80">Sign here</canvas> }}
+      <input type="hidden" id="signature" name="signature" value="" /></br>
+      <label for="signature">Sign here</label>
+    </div>
+
+    <input id="submit" type="submit" value="Sign!" />
+
+  </form>
+
+  <div class="row">
+    <div class="col-md-12">
+      <h1>E-Signature</h1>
+      <p>Sign in the canvas below and save your signature as an image!</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <canvas id="sig-canvas" width="620" height="160">
+      </canvas>
+    </div>
+  </div> 
+
+ <div class="row">
+    <div class="col-md-12">
+      <button class="btn btn-primary" id="sig-submitBtn">Submit Signature</button>
+      <button class="btn btn-default" id="sig-clearBtn">Clear Signature</button>
+    </div>
+  </div>
+  <br />
+
+  <div class="row">
+    <div class="col-md-12">
+      <textarea id="sig-dataUrl" class="form-control" rows="5">Data URL for your
+        signature will go here!</textarea>
+    </div>
+  </div>
+  <br /> 
+
+   <div class="row">
+    <div class="col-md-12">
+      <img id="sig-image" src="" alt="Your signature will go here!" />
+    </div>
+  </div>
+
+</div> 

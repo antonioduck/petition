@@ -1,5 +1,13 @@
 const spicedPg = require("spiced-pg");
-const db = spicedPg("postgres:a:postgres@localhost:5432/signatures");
+const username = "a";
+const password = "postgres";
+const database = "signatures";
+const db = spicedPg(
+  `postgres:${username}:${password}@localhost:5432/${database}`
+);
+
+// const spicedPg = require("spiced-pg");
+//const db = spicedPg("postgres:a:postgres@localhost:5432/signatures");
 
 module.exports.getCities = () => {
   return db.query(` SELECT  *  FROM actors`);
@@ -14,11 +22,11 @@ module.exports.addcity = (city, country) => {
   );
 };
 
-module.exports.addSignature = (firstname, lastname, signature) => {
+module.exports.addSignature = (first, last, signature) => {
   return db.query(
-    `INSERT INTO SIGNATURES(first,last,signatures)
+    `INSERT INTO SIGNATURES(first,last,signature)
     VALUES($1,,$2,$3)`,
-    [firstname, lastname, signature]
+    [first, last, signature]
   );
 };
 
