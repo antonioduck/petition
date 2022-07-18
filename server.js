@@ -70,8 +70,14 @@ app.post("/petition", (req, res) => {
 });
 
 app.get("/signed", (req, res) => {
-  res.render("signed", {
-    title: "My signed petitions",
+  db.getSignaturesById(req.session.signatureId).then((signature) => {
+    signature = signature.rows[0];
+    console.log(signature);
+    res.render("signed", {
+      first: signature.first,
+      last: signature.last,
+      signature: signature.signature,
+    });
   });
 });
 
