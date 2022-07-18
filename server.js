@@ -4,12 +4,21 @@ const db = require("./db");
 
 const hb = require("express-handlebars");
 const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
 
 app.engine("handlebars", hb.engine());
 app.set("view engine", "handlebars");
 
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+app.use(
+  cookieSession({
+    secret: `I'm always angry.`,
+    maxAge: 1000 * 60 * 60 * 24 * 14,
+    sameSite: true,
+  })
+);
 
 app.use(express.static("./public"));
 
@@ -18,27 +27,39 @@ app.get("/", (req, res) => {
 });
 
 app.get("/petition", (req, res) => {
-  if (req.cookies.signed === "1") {
-    return res.redirect("/signed");
+  if (req.session.signatureId !== undefined) {
+    db.getSignaturesById(req.session.signatureId).then((signature) => {
+      signature = signature.rows[0];
+      console.log(signature);
+      res.render("signed", {
+        first: signature.first,
+        last: signature.last,
+        signature: signature.signature,
+      });
+    });
+  } else {
+    res.render("petition", { title: " welcome to my petition" });
   }
-  res.render("petition", { title: "My Petition" });
 });
 
 app.post("/petition", (req, res) => {
   const data = req.body;
   console.log(data);
   db.addSignature(data.first, data.last, data.signature)
-    .then(() => {
+    .then((Newdata) => {
       console.log("addSignature worked");
       //set the cookie
       res.cookie("signed", 1);
       //redirect if successful
+
+      req.session.signatureId = Newdata.rows[0].id;
       res.redirect("/signed");
     })
     .catch((err) => {
       console.log("An error occured", err);
       const error = {
-        message: "Are you sure , that u filled all fields?",
+        message:
+          "something went wrong !!Are you sure , that u filled all fields?",
       };
 
       res.render("petition", {
@@ -49,7 +70,9 @@ app.post("/petition", (req, res) => {
 });
 
 app.get("/signed", (req, res) => {
-  res.render("signed", { title: "My signed users" });
+  res.render("signed", {
+    title: "My signed petitions",
+  });
 });
 
 app.get("/signers", (req, res) => {

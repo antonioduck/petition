@@ -156,6 +156,8 @@
   var sigImage = document.getElementById("sig-image");
   var clearBtn = document.getElementById("sig-clearBtn");
   var submitBtn = document.getElementById("sig-submitBtn");
+  //   var submitBtn = document.getElementById("submit");
+
   clearBtn.addEventListener(
     "click",
     function (e) {
@@ -170,6 +172,7 @@
     function (e) {
       var dataUrl = canvas.toDataURL();
       sigText.innerHTML = dataUrl;
+      document.querySelector("#signature").value = dataUrl;
       sigImage.setAttribute("src", dataUrl);
     },
     false
