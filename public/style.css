@@ -16,6 +16,13 @@ body {
   gap: 10px;
 }
 
+.name-field {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
 .errorm {
   color: red;
 }

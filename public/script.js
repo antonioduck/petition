@@ -155,8 +155,8 @@
   var sigText = document.getElementById("sig-dataUrl");
   var sigImage = document.getElementById("sig-image");
   var clearBtn = document.getElementById("sig-clearBtn");
-  var submitBtn = document.getElementById("sig-submitBtn");
-  //   var submitBtn = document.getElementById("submit");
+  // var submitBtn = document.getElementById("sig-submitBtn");
+  var submitBtn = document.getElementById("submit");
 
   clearBtn.addEventListener(
     "click",

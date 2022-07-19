@@ -23,7 +23,7 @@ app.use(
 app.use(express.static("./public"));
 
 app.get("/", (req, res) => {
-  res.redirect("/petition");
+  res.redirect("/register");
 });
 
 app.get("/petition", (req, res) => {
@@ -32,8 +32,6 @@ app.get("/petition", (req, res) => {
       signature = signature.rows[0];
       console.log(signature);
       res.render("signed", {
-        first: signature.first,
-        last: signature.last,
         signature: signature.signature,
       });
     });
@@ -74,8 +72,6 @@ app.get("/signed", (req, res) => {
     signature = signature.rows[0];
     console.log(signature);
     res.render("signed", {
-      first: signature.first,
-      last: signature.last,
       signature: signature.signature,
     });
   });
@@ -85,22 +81,61 @@ app.get("/signers", (req, res) => {
   res.render("signers", { title: "List of users who signed" });
 });
 
-app.get("/cities", (req, res) => {
-  db.getCities()
-    .then((results) => {
-      console.log("results from get cities ", results);
-    })
-    .catch((err) => console.log("err in GetCities", err));
+app.get("/register", (req, res) => {
+  res.render("register", { title: "Lets register" });
 });
 
-app.post("/add-city", (req, res) => {
-  db.addCity("Cyena", "Equador")
+app.post("/register", (req, res) => {
+  const data = req.body;
+  //console.log(data);
+  db.insertUser(data.first, data.last, data.email, data.password)
     .then(() => {
-      console.log("Yea it worked");
+      console.log("registration worked");
+
+      res.redirect("/petition");
     })
     .catch((err) => {
-      console.log("err in add city ", err);
-      res.sendStatus(500);
+      console.log("An error occured", err);
+      const error = {
+        message:
+          "something went wrong !!Are you sure , that u filled all fields properly?",
+      };
+
+      res.render("register", {
+        title: "Something went wrong . Pls try again",
+        error,
+      });
     });
 });
+
+app.get("/login", (req, res) => {
+  res.render("login", { title: "Lets Log in" });
+});
+
+app.post("/login", (req, res) => {
+  if (true) {
+  } else {
+    res.render("petition", {
+      title: "Welcome to Petition",
+    });
+  }
+});
+// app.get("/cities", (req, res) => {
+//   db.getCities()
+//     .then((results) => {
+//       console.log("results from get cities ", results);
+//     })
+//     .catch((err) => console.log("err in GetCities", err));
+// });
+
+// app.post("/add-city", (req, res) => {
+//   db.addCity("Cyena", "Equador")
+//     .then(() => {
+//       console.log("Yea it worked");
+//     })
+//     .catch((err) => {
+//       console.log("err in add city ", err);
+//       res.sendStatus(500);
+//     });
+// });
 app.listen(8080, () => console.log("petition server is listening ..."));

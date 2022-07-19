@@ -1,0 +1,35 @@
+<div class="container">
+
+  <p>You need to register to move forward</p>
+
+  <p class=" errorm"> {{error.message}} </p>
+
+  <form method="post" id="form">
+
+    <div class="name-field">
+      <label for="first">First name:</label>
+      <input type="text" value="" name="first" id="first" /></br>
+      <label for="last">Last name:</label>
+      <input type="text" value="" name="last" id="last" /></br>
+
+      <label for="email">E-mail:</label>
+      <input type="text" value="" name="email" id="email" /></br>
+      <label for="password">Password:</label>
+      <input type="password" value="" name="password" id="password" /></br>
+
+<input id="submit" type="submit" value="Sign up" />
+    </div>
+    {{!-- <div class="sign-canvas">
+      <canvas id="sig-canvas" width="620" height="160"></canvas>
+      {{! <canvas id="canvas" width="300" height="80">Sign here</canvas> }}
+      <input type="hidden" id="signature" name="signature" value="" /></br>
+      <label for="signature">Sign here</label>
+    </div> --}}
+
+    
+
+  </form>
+
+  <p>If you are already a member please <a href="login">Log in </a>.</p>
+
+</div>
