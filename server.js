@@ -82,6 +82,7 @@ app.get("/signers", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
+  if (){}
   res.render("register", { title: "Lets register" });
 });
 
@@ -89,9 +90,12 @@ app.post("/register", (req, res) => {
   const data = req.body;
   //console.log(data);
   db.insertUser(data.first, data.last, data.email, data.password)
-    .then(() => {
+    .then((result) => {
       console.log("registration worked");
+      console.log(result);
+      // log result, find the user id value, and store it in a cookie!\
 
+      res.cookie("registered_user_cookie", result.rows[0].id);
       res.redirect("/petition");
     })
     .catch((err) => {
@@ -113,12 +117,39 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  if (true) {
-  } else {
-    res.render("petition", {
-      title: "Welcome to Petition",
+  const { email, password } = req.body;
+  db.authenticateUser(email, password)
+    .then((user) => {
+      console.log("logged in ");
+      req.session.user_ID = user.id;
+      res.redirect("/profile");
+    })
+    .catch((err) => {
+      console.log("err", err);
+      res.render("login");
+      message: "Login failed";
     });
-  }
+});
+
+app.get("/profile", (req, res) => {
+  res.render("profile", { title: "Lets Log in" });
+});
+
+app.post("/profile", (req, res) => {
+  const data = req.body;
+  db.insertProfileInfo(data.homepage, data.city, data.age)
+
+    .then(() => {
+      console.log("profile registration worked");
+      res.redirect("/petition");
+    })
+
+    .catch((err) => {
+      console.log("An error occured", err);
+      const error = {
+        message: "something went wrong !",
+      };
+    });
 });
 // app.get("/cities", (req, res) => {
 //   db.getCities()
