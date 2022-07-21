@@ -22,12 +22,12 @@ const bcrypt = require("bcryptjs");
 //   );
 // };
 
-module.exports.addSignature = (first, last, signature) => {
+module.exports.addSignature = (signature, userID) => {
   return db.query(
-    `INSERT INTO SIGNATURES(first,last,signature)
-    VALUES($1,$2,$3) RETURNING ID`,
+    `INSERT INTO SIGNATURES(signature, user_id)
+    VALUES($1, $2) RETURNING ID`,
 
-    [first, last, signature]
+    [signature, userID]
   );
 };
 
@@ -128,11 +128,13 @@ module.exports.authenticateUser = (email, password) => {
   // - return the found user (need it for adding to the session!)
   // - throw an error if password does not match!
 };
-module.exports.insertProfileInfo = (url, city, age) => {
+module.exports.insertProfileInfo = (url, city, age, userID) => {
   return db.query(
-    `INSERT INTO profiles(url,city,age)
-    VALUES($1,$2,$3) RETURNING ID`,
-    [url, city, age]
+    `INSERT INTO profiles(url,city,age, user_id)
+    VALUES($1,$2,$3,$4) 
+  ON CONFLICT (user_id)
+DO UPDATE SET age = $3, url = $1, city=$2 RETURNING ID;`,
+    [url, city, age, userID]
     // 1. Hash the user's password [PROMISE]
     // 2. INSERT into the database with a query
     // 3. Return the entire row

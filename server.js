@@ -31,7 +31,7 @@ app.get("/petition", (req, res) => {
     db.getSignaturesById(req.session.signatureId).then((signature) => {
       signature = signature.rows[0];
       console.log(signature);
-      res.render("signed", {
+      res.render("thank-you", {
         signature: signature.signature,
       });
     });
@@ -43,7 +43,8 @@ app.get("/petition", (req, res) => {
 app.post("/petition", (req, res) => {
   const data = req.body;
   console.log(data);
-  db.addSignature(data.first, data.last, data.signature)
+  const userID = req.session.userID;
+  db.addSignature(data.signature, userID)
     .then((Newdata) => {
       console.log("addSignature worked");
       //set the cookie
@@ -51,7 +52,7 @@ app.post("/petition", (req, res) => {
       //redirect if successful
 
       req.session.signatureId = Newdata.rows[0].id;
-      res.redirect("/signed");
+      res.redirect("/thank-you");
     })
     .catch((err) => {
       console.log("An error occured", err);
@@ -67,22 +68,22 @@ app.post("/petition", (req, res) => {
     });
 });
 
-app.get("/signed", (req, res) => {
-  db.getSignaturesById(req.session.signatureId).then((signature) => {
-    signature = signature.rows[0];
-    console.log(signature);
-    res.render("signed", {
-      signature: signature.signature,
-    });
-  });
-});
+// app.get("/thank-you", (req, res) => {
+//   db.getSignaturesById(req.session.signatureId).then((signature) => {
+//     signature = signature.rows[0];
+//     console.log(signature);
+//     res.render("thank-you", {
+//       signature: signature.signature,
+//     });
+//   });
+// });
 
 app.get("/signers", (req, res) => {
   res.render("signers", { title: "List of users who signed" });
 });
 
 app.get("/register", (req, res) => {
-  if (){}
+  // if (){}
   res.render("register", { title: "Lets register" });
 });
 
@@ -95,8 +96,9 @@ app.post("/register", (req, res) => {
       console.log(result);
       // log result, find the user id value, and store it in a cookie!\
 
-      res.cookie("registered_user_cookie", result.rows[0].id);
-      res.redirect("/petition");
+      //res.cookie("registered_user_cookie", result.rows[0].id);
+      req.session.userID = result.rows[0].id;
+      res.redirect("/profile");
     })
     .catch((err) => {
       console.log("An error occured", err);
@@ -121,7 +123,10 @@ app.post("/login", (req, res) => {
   db.authenticateUser(email, password)
     .then((user) => {
       console.log("logged in ");
-      req.session.user_ID = user.id;
+      console.log(user);
+      // req.session.userID = result.rows[0].id;
+      req.session.userID = user.id;
+
       res.redirect("/profile");
     })
     .catch((err) => {
@@ -137,7 +142,9 @@ app.get("/profile", (req, res) => {
 
 app.post("/profile", (req, res) => {
   const data = req.body;
-  db.insertProfileInfo(data.homepage, data.city, data.age)
+  const userID = req.session.userID;
+  const age = data.age || null;
+  db.insertProfileInfo(data.homepage, data.city, data.age, userID)
 
     .then(() => {
       console.log("profile registration worked");
@@ -151,22 +158,38 @@ app.post("/profile", (req, res) => {
       };
     });
 });
-// app.get("/cities", (req, res) => {
-//   db.getCities()
-//     .then((results) => {
-//       console.log("results from get cities ", results);
-//     })
-//     .catch((err) => console.log("err in GetCities", err));
-// });
 
-// app.post("/add-city", (req, res) => {
-//   db.addCity("Cyena", "Equador")
-//     .then(() => {
-//       console.log("Yea it worked");
-//     })
-//     .catch((err) => {
-//       console.log("err in add city ", err);
-//       res.sendStatus(500);
-//     });
-// });
+app.get("/profile/edit", (req, res) => {
+  res.render("profile-edit", { title: "lets modify the profile" });
+});
+app.post("/profile/edit", (req, res) => {
+    // 1. Update the users table
+        // a. with password
+            // db.updateUserWithPassword
+                // Make sure you hash the password first.
+        // b. without password
+            // db.updateUserWithoutPassword
+    // 2. Update the profiles table
+        // a. we already have profile info
+        // b. no profile info yet
+        // ➡️ Use an UPSERT query
+
+    let userUpdatePromise;
+
+    if(password) {
+        userUpdatePromise = db.updateUserWithPassword(...)
+    } else {
+        userUpdatePromise = db.updateUserWithoutPassword(...)
+    }
+
+    userUpdatePromise.then(() => {
+        return db.upsertProfile(...)
+    }).then(() => {
+        res.redirect("/petition")
+    }).catch((err) => {
+        console.log(err)
+    })
+
+    // If you feel adventorous, try to do this with Promise.all()
+}) 
 app.listen(8080, () => console.log("petition server is listening ..."));

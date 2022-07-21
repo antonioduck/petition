@@ -109,6 +109,10 @@
       ctx.moveTo(lastPos.x, lastPos.y);
       ctx.lineTo(mousePos.x, mousePos.y);
       ctx.stroke();
+      var dataUrl = canvas.toDataURL();
+      sigText.innerHTML = dataUrl;
+      document.querySelector("#signature").value = dataUrl;
+      // sigImage.setAttribute("src", dataUrl);
       lastPos = mousePos;
     }
   }
@@ -158,22 +162,22 @@
   // var submitBtn = document.getElementById("sig-submitBtn");
   var submitBtn = document.getElementById("submit");
 
-  clearBtn.addEventListener(
-    "click",
-    function (e) {
-      clearCanvas();
-      sigText.innerHTML = "Data URL for your signature will go here!";
-      sigImage.setAttribute("src", "");
-    },
-    false
-  );
+  // clearBtn.addEventListener(
+  //   "click",
+  //   function (e) {
+  //     clearCanvas();
+  //     sigText.innerHTML = "Data URL for your signature will go here!";
+  //     sigImage.setAttribute("src", "");
+  //   },
+  //   false
+  // );
   submitBtn.addEventListener(
     "click",
     function (e) {
       var dataUrl = canvas.toDataURL();
       sigText.innerHTML = dataUrl;
       document.querySelector("#signature").value = dataUrl;
-      sigImage.setAttribute("src", dataUrl);
+      // sigImage.setAttribute("src", dataUrl);
     },
     false
   );
