@@ -28,13 +28,23 @@ app.get("/", (req, res) => {
 
 app.get("/petition", (req, res) => {
   if (req.session.signatureId !== undefined) {
-    db.getSignaturesById(req.session.signatureId).then((signature) => {
-      signature = signature.rows[0];
-      console.log(signature);
-      res.render("thank-you", {
-        signature: signature.signature,
+    let CountSigners;
+    db.countSignatures()
+      .then((results) => {
+        CountSigners = results.rows[0];
+        console.log(CountSigners);
+      })
+      .then(() => {
+        return db.getSignaturesById(req.session.signatureId);
+      })
+      .then((results) => {
+        const signer = results.rows[0];
+        // console.log(signer);
+        res.render("thank-you", {
+          signers: CountSigners.count,
+          signature: signer.signature,
+        });
       });
-    });
   } else {
     res.render("petition", { title: " welcome to my petition" });
   }
@@ -68,18 +78,66 @@ app.post("/petition", (req, res) => {
     });
 });
 
-// app.get("/thank-you", (req, res) => {
-//   db.getSignaturesById(req.session.signatureId).then((signature) => {
-//     signature = signature.rows[0];
-//     console.log(signature);
-//     res.render("thank-you", {
-//       signature: signature.signature,
-//     });
-//   });
-// });
+app.get("/thank-you", (req, res) => {
+  let CountSigners;
+  db.countSignatures()
+    .then((results) => {
+      CountSigners = results.rows[0];
+      console.log(CountSigners);
+    })
+    .then(() => {
+      return db.getSignaturesById(req.session.signatureId);
+    })
+    .then((results) => {
+      const signer = results.rows[0];
+      // console.log(signer);
+      res.render("thank-you", {
+        signers: CountSigners.count,
+        signature: signer.signature,
+      });
+    });
+});
 
 app.get("/signers", (req, res) => {
-  res.render("signers", { title: "List of users who signed" });
+  db.getSigners()
+    .then((result) => {
+      if (req.session.userID && req.session.signatureId) {
+        console.log("Succesfully signed!");
+        // console.log("result.rows.length: ", result.rows.length);
+        console.log("result.rows: ", result.rows);
+        res.render("signers", {
+          layouts: "main",
+          signers: result.rows,
+        });
+      } else {
+        console.log("tried to enter '/signers' route without signing petition");
+        res.redirect("/petition");
+      }
+    })
+    .catch((err) => console.log("err in getSigners: ", err));
+});
+
+app.get("/signers/:city", (req, res) => {
+  //console.log("req.params.city: ", req.params.city);
+  const city = req.params.city;
+  console.log(city);
+  console.log("req.body: ", req.body);
+
+  db.getSigners(city)
+    .then((result) => {
+      if (req.session.userID && req.session.signatureId) {
+        console.log("Succesfully signed!");
+        // console.log("result.rows.length: ", result.rows.length);
+        console.log("result.rows: ", result.rows);
+        res.render("signersCity", {
+          signers: result.rows,
+        });
+      } else {
+        console.log("tried to enter '/signers' route without signing petition");
+        res.redirect("/petition");
+      }
+    })
+    .catch((err) => console.log("err in getSigners: ", err));
 });
 
 app.get("/register", (req, res) => {
@@ -162,34 +220,39 @@ app.post("/profile", (req, res) => {
 app.get("/profile/edit", (req, res) => {
   res.render("profile-edit", { title: "lets modify the profile" });
 });
-app.post("/profile/edit", (req, res) => {
-    // 1. Update the users table
-        // a. with password
-            // db.updateUserWithPassword
-                // Make sure you hash the password first.
-        // b. without password
-            // db.updateUserWithoutPassword
-    // 2. Update the profiles table
-        // a. we already have profile info
-        // b. no profile info yet
-        // ➡️ Use an UPSERT query
+// app.post("/profile/edit", (req, res) => {
+//     // 1. Update the users table
+//         // a. with password
+//             // db.updateUserWithPassword
+//                 // Make sure you hash the password first.
+//         // b. without password
+//             // db.updateUserWithoutPassword
+//     // 2. Update the profiles table
+//         // a. we already have profile info
+//         // b. no profile info yet
+//         // ➡️ Use an UPSERT query
 
-    let userUpdatePromise;
+//     let userUpdatePromise;
 
-    if(password) {
-        userUpdatePromise = db.updateUserWithPassword(...)
-    } else {
-        userUpdatePromise = db.updateUserWithoutPassword(...)
-    }
+//     if(password) {
+//         userUpdatePromise = db.updateUserWithPassword(...)
+//     } else {
+//         userUpdatePromise = db.updateUserWithoutPassword(...)
+//     }
 
-    userUpdatePromise.then(() => {
-        return db.upsertProfile(...)
-    }).then(() => {
-        res.redirect("/petition")
-    }).catch((err) => {
-        console.log(err)
-    })
+//     userUpdatePromise.then(() => {
+//         return db.upsertProfile(...)
+//     }).then(() => {
+//         res.redirect("/petition")
+//     }).catch((err) => {
+//         console.log(err)
+//     })
 
-    // If you feel adventorous, try to do this with Promise.all()
-}) 
+//     // If you feel adventorous, try to do this with Promise.all()
+// })
+
+app.get("/logout", (req, res) => {
+  req.session = null;
+  return res.redirect("/login");
+});
 app.listen(8080, () => console.log("petition server is listening ..."));

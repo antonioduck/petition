@@ -1,0 +1,16 @@
+<h1>Here are our signers from {{signers.0.city}}!</h1>
+{{#each signers}}
+  <p>{{this.id}}
+    {{#if url}}
+      <a href="{{this.url}}">{{this.first}} {{this.last}}</a>
+      {{this.age}}
+      <a href="/signers/{{this.city}}">{{this.city}}</a>
+    {{else}}
+      {{this.first}}
+      {{this.last}}
+      {{this.age}}
+      <a href="/signers/{{city}}">{{city}}</a>
+    {{/if}}
+  </p>
+{{/each}}
+<p><a href="/signers">Go back to Signers</a></p>

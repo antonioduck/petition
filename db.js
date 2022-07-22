@@ -6,21 +6,29 @@ const db = spicedPg(
   `postgres:${username}:${password}@localhost:5432/${database}`
 );
 const bcrypt = require("bcryptjs");
-// const spicedPg = require("spiced-pg");
-//const db = spicedPg("postgres:a:postgres@localhost:5432/signatures");
 
-// module.exports.getCities = () => {
-//   return db.query(` SELECT  *  FROM actors`);
-// };
-
-// module.exports.addcity = (city, country) => {
-//   return db.query(
-//     `
-//         INSERT INTO cities (city,country)
-//         VALUES ($1,$2)`,
-//     [city, country]
-//   );
-// };
+module.exports.getSigners = (city) => {
+  console.log("city: ", city);
+  if (city != undefined) {
+    return db.query(
+      `select first, last, age, city, url from users
+            join signatures
+            on users.id = signatures.user_id
+            left outer join profiles
+            on users.id = profiles.user_id
+            where profiles.city = $1`,
+      [city]
+    );
+  } else {
+    return db.query(
+      `select first, last, age, city, url from users
+            join signatures
+            on users.id = signatures.user_id
+            left outer join profiles
+            on users.id = profiles.user_id;`
+    );
+  }
+};
 
 module.exports.addSignature = (signature, userID) => {
   return db.query(
@@ -140,10 +148,4 @@ DO UPDATE SET age = $3, url = $1, city=$2 RETURNING ID;`,
     // 3. Return the entire row
     // so that we can store the user's id in the session!
   );
-};
-
-module.exports.getId = (id) => {
-  ` SELECT * FROM users
-  WHERE $1=id`,
-    [id];
 };
