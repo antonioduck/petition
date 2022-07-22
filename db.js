@@ -47,10 +47,12 @@ module.exports.getAllSignatures = () => {
   return db.query(`SELECT * FROM signatures`);
 };
 module.exports.getSignaturesById = (id) => {
+  console.log("id in getSignaturesById", id);
+
   return db.query(
     `
 
-    SELECT * FROM SIGNATURES WHERE ID=$1
+    SELECT * FROM SIGNATURES WHERE id=$1
   `,
     [id]
   );

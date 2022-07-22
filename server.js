@@ -58,9 +58,9 @@ app.post("/petition", (req, res) => {
     .then((Newdata) => {
       console.log("addSignature worked");
       //set the cookie
-      res.cookie("signed", 1);
+      //res.cookie("signed", 1);
       //redirect if successful
-
+      console.log("new data ", Newdata.rows[0].id);
       req.session.signatureId = Newdata.rows[0].id;
       res.redirect("/thank-you");
     })
@@ -83,14 +83,19 @@ app.get("/thank-you", (req, res) => {
   db.countSignatures()
     .then((results) => {
       CountSigners = results.rows[0];
-      console.log(CountSigners);
+      console.log("these are the total signers", CountSigners);
     })
     .then(() => {
+      console.log(
+        "count signatures req.session.signatureId",
+        req.session.signatureId
+      );
       return db.getSignaturesById(req.session.signatureId);
     })
     .then((results) => {
+      console.log("these are my results", results);
       const signer = results.rows[0];
-      // console.log(signer);
+      console.log("signer", signer);
       res.render("thank-you", {
         signers: CountSigners.count,
         signature: signer.signature,
@@ -180,12 +185,24 @@ app.post("/login", (req, res) => {
   const { email, password } = req.body;
   db.authenticateUser(email, password)
     .then((user) => {
-      console.log("logged in ");
-      console.log(user);
-      // req.session.userID = result.rows[0].id;
+      //console.log("logged in ", user);
+      //console.log(user.rows[0].id);
       req.session.userID = user.id;
+      //req.session.userID = userId;
+      let userId = user.id;
 
-      res.redirect("/profile");
+      db.getSignaturesById(userId)
+        .then((results) => {
+          console.log("where the f... is the signature", results.rows);
+          if (results.rows[0]) {
+            res.redirect("/thank-you");
+          } else {
+            res.redirect("/petition");
+          }
+        })
+
+        .catch();
+      //.res.redirect("/profile");
     })
     .catch((err) => {
       console.log("err", err);
@@ -253,6 +270,6 @@ app.get("/profile/edit", (req, res) => {
 
 app.get("/logout", (req, res) => {
   req.session = null;
-  return res.redirect("/login");
+  return res.redirect("/register");
 });
 app.listen(8080, () => console.log("petition server is listening ..."));
