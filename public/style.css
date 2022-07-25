@@ -1,5 +1,7 @@
 body {
-  background-color: yellow;
+  background-position: center;
+  background-size: cover;
+  background-image: url("PetitionPic.jpg");
 }
 
 #sig-canvas {
@@ -25,4 +27,28 @@ body {
 }
 .errorm {
   color: red;
+}
+
+input {
+  background-color: white;
+  color: black;
+  border: 2px solid #008cba;
+}
+
+.btn {
+  background: lightblue;
+  border-radius: 40%;
+}
+.btn:hover {
+  background-color: #008cba;
+  color: white;
+}
+
+canvas {
+  background-color: white;
+}
+
+.form-control {
+  width: 0px;
+  height: 0px;
 }

@@ -51,13 +51,20 @@ module.exports.getSignaturesById = (id) => {
 
   return db.query(
     `
-
-    SELECT * FROM SIGNATURES WHERE id=$1
-  `,
+    SELECT * FROM signatures WHERE id=$1`,
     [id]
   );
 };
 
+module.exports.getSignaturesByUserId = (id) => {
+  console.log("id in getSignaturesByUserId", id);
+
+  return db.query(
+    `
+    SELECT signature, users.first,users.last FROM signatures JOIN users ON user_id=users.id WHERE user_id=$1   `,
+    [id]
+  );
+};
 // Used for REGISTRATION
 function hashPassword(password) {
   return bcrypt.genSalt().then((salt) => {
@@ -90,17 +97,11 @@ findUserByEmail = (email) => {
   return db.query(`SELECT * FROM USERS WHERE EMAIL =$1`, [email]);
   // return db.query(....)
 };
-// Used for LOGIN
-// Returns a PROMISE. Resolves:
-// - the found users row if found
-// - an error if anything goes wrong
-// (no email found OR wrong password)
 
 module.exports.authenticateUser = (email, password) => {
   let foundUser;
   return findUserByEmail(email)
     .then((user) => {
-      // log user.rows, find the passwordhash
       console.log("the whole object is ", user.rows);
       console.log(
         "[db.jd] user.rows in findUserByEmail",
@@ -121,14 +122,14 @@ module.exports.authenticateUser = (email, password) => {
       } else {
         throw "Incorrect password";
       }
+    })
+    .catch(() => {
+      console.log("the passwords do not match ");
+      //   call compare pass to it the cleartext password and the hash
+      //   then we check if our resultsare true or false
+      //   if true return the user id
+      //   else we return false
     });
-  // .catch(() => {
-  //   console.log("the passwords do not match ");
-  //   call compare pass to it the cleartext password and the hash
-  //   then we check if our resultsare true or false
-  //   if true return the user id
-  //   else we return false
-  // });
 
   // 1. Look for a user with the given email
   // 2. If not found, throw an error!
@@ -149,5 +150,29 @@ DO UPDATE SET age = $3, url = $1, city=$2 RETURNING ID;`,
     // 2. INSERT into the database with a query
     // 3. Return the entire row
     // so that we can store the user's id in the session!
+  );
+};
+
+module.exports.deleteSignature = (userId) => {
+  return db.query(`DELETE FROM signatures WHERE user_id=$1 ;`, [userId]);
+};
+
+module.exports.UpdateUserProfile = (first, last, email, id) => {
+  return db.query(
+    `UPDATE users SET first=($1), last=($2), email=($3) WHERE id=($4) RETURNING *`,
+    [first, last, email, id]
+    // 1. Hash the user's password [PROMISE]
+    // 2. INSERT into the database with a query
+    // 3. Return the entire row
+    // so that we can store the user's id in the session!
+  );
+};
+
+module.exports.getInfo = (user_id) => {
+  return db.query(
+    `SELECT first, last, email, age, city, url
+    FROM users FULL JOIN profiles on users.
+    id=profiles.user_id WHERE users.id=($1)`,
+    [user_id]
   );
 };

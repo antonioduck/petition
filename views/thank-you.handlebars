@@ -1,13 +1,18 @@
 <div class="container">
-  <h1>Thank you for signing, {{Name}}!</h1>
-
-  <img src="{{signature}}" id="sig-canvas" alt="here is your signature" />
-  <a id="signers-count" href="signers">See all {{signers}} signers</a>
+  <h1>Thank you for signing, {{signatures.first}} {{signatures.last}}!</h1>
+  {{#if signatures}}
+    <img
+      src="{{signatures.signature}}"
+      id="sig-canvas"
+      alt="here is your signature"
+    />
+  {{/if}}
+  <a id="signers-count" href="/signers">See all {{signers}} signers</a>
   <hr />
   <p><a href="./logout">Logout</a></p>
   <p><a href="./profile/edit">Modify your profile</a></p>
-  <form action="/signature/delete" method="post">
-    <button>Delete Signature</button>
+  <form action="/signature-delete" method="post">
+    <button class="btn" type="submit">Delete Signature</button>
   </form>
 
 </div>

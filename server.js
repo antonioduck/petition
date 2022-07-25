@@ -27,23 +27,19 @@ app.get("/", (req, res) => {
 });
 
 app.get("/petition", (req, res) => {
-  if (req.session.signatureId !== undefined) {
+  if (req.session.userID && req.session.signatureId) {
     let CountSigners;
     db.countSignatures()
       .then((results) => {
         CountSigners = results.rows[0];
         console.log(CountSigners);
+        return db.getSignaturesByUserId(req.session.userID);
       })
-      .then(() => {
-        return db.getSignaturesById(req.session.signatureId);
-      })
+
       .then((results) => {
         const signer = results.rows[0];
         // console.log(signer);
-        res.render("thank-you", {
-          signers: CountSigners.count,
-          signature: signer.signature,
-        });
+        res.redirect("/thank-you");
       });
   } else {
     res.render("petition", { title: " welcome to my petition" });
@@ -80,33 +76,30 @@ app.post("/petition", (req, res) => {
 
 app.get("/thank-you", (req, res) => {
   let CountSigners;
-  db.countSignatures()
-    .then((results) => {
-      CountSigners = results.rows[0];
-      console.log("these are the total signers", CountSigners);
-    })
-    .then(() => {
-      console.log(
-        "count signatures req.session.signatureId",
-        req.session.signatureId
-      );
-      return db.getSignaturesById(req.session.signatureId);
-    })
-    .then((results) => {
-      console.log("these are my results", results);
-      const signer = results.rows[0];
-      console.log("signer", signer);
+  db.countSignatures().then((results) => {
+    CountSigners = results.rows[0];
+    console.log("these are the total signers", CountSigners);
+    db.getSignaturesByUserId(req.session.userID).then((signatures) => {
+      console.log("signature in thank-you: ", signatures);
+      console.log("req.session", req.session);
       res.render("thank-you", {
         signers: CountSigners.count,
-        signature: signer.signature,
+        signatures: signatures.rows[0],
       });
     });
+  });
+  // .then((results) => {
+  //   console.log("these are my results", results);
+  //   const signer = results.rows[0];
+  //   console.log("signer", signer);
+
+  // });
 });
 
 app.get("/signers", (req, res) => {
   db.getSigners()
     .then((result) => {
-      if (req.session.userID && req.session.signatureId) {
+      if (req.session.userID) {
         console.log("Succesfully signed!");
         // console.log("result.rows.length: ", result.rows.length);
         console.log("result.rows: ", result.rows);
@@ -130,7 +123,7 @@ app.get("/signers/:city", (req, res) => {
 
   db.getSigners(city)
     .then((result) => {
-      if (req.session.userID && req.session.signatureId) {
+      if (req.session.userID) {
         console.log("Succesfully signed!");
         // console.log("result.rows.length: ", result.rows.length);
         console.log("result.rows: ", result.rows);
@@ -185,24 +178,27 @@ app.post("/login", (req, res) => {
   const { email, password } = req.body;
   db.authenticateUser(email, password)
     .then((user) => {
-      //console.log("logged in ", user);
-      //console.log(user.rows[0].id);
-      req.session.userID = user.id;
-      //req.session.userID = userId;
+      console.log("logged in ", user);
+      // console.log(user.rows[0].id);
+      // req.session.userID = user.id;
+      // if(req.session.userID)
       let userId = user.id;
+      req.session.userID = userId;
 
-      db.getSignaturesById(userId)
+      db.getSignaturesByUserId(userId)
         .then((results) => {
-          console.log("where the f... is the signature", results.rows);
+          console.log("where the f... is the signature", results);
           if (results.rows[0]) {
             res.redirect("/thank-you");
           } else {
             res.redirect("/petition");
           }
         })
-
-        .catch();
-      //.res.redirect("/profile");
+        .catch((err) => {
+          console.log("err in get signature at login", err);
+          res.render("login");
+          message: "Login failed";
+        });
     })
     .catch((err) => {
       console.log("err", err);
@@ -235,41 +231,75 @@ app.post("/profile", (req, res) => {
 });
 
 app.get("/profile/edit", (req, res) => {
-  res.render("profile-edit", { title: "lets modify the profile" });
+  db.getInfo(req.session.userID).then((result) => {
+    res.render("profile-edit", { title: "My title", result: result.rows[0] });
+  });
 });
-// app.post("/profile/edit", (req, res) => {
-//     // 1. Update the users table
-//         // a. with password
-//             // db.updateUserWithPassword
-//                 // Make sure you hash the password first.
-//         // b. without password
-//             // db.updateUserWithoutPassword
-//     // 2. Update the profiles table
-//         // a. we already have profile info
-//         // b. no profile info yet
-//         // ➡️ Use an UPSERT query
 
-//     let userUpdatePromise;
+app.post("/profile/edit", (req, res) => {
+  console.log("my data are ", req.body);
 
-//     if(password) {
-//         userUpdatePromise = db.updateUserWithPassword(...)
-//     } else {
-//         userUpdatePromise = db.updateUserWithoutPassword(...)
-//     }
+  db.UpdateUserProfile(
+    req.body.first,
+    req.body.last,
+    req.body.email,
+    req.session.userID
+  ).then((result) => {
+    console.log("the profile results are:", result.rows);
+    res.redirect("/profile/edit");
+  });
+  // 1. Update the users table
+  // a. with password
+  // db.updateUserWithPassword
+  // Make sure you hash the password first.
+  // b. without password
+  // db.updateUserWithoutPassword
+  // 2. Update the profiles table
+  // a. we already have profile info
+  // b. no profile info yet
+  // ➡️ Use an UPSERT query
 
-//     userUpdatePromise.then(() => {
-//         return db.upsertProfile(...)
-//     }).then(() => {
-//         res.redirect("/petition")
-//     }).catch((err) => {
-//         console.log(err)
-//     })
+  // let userUpdatePromise;
 
-//     // If you feel adventorous, try to do this with Promise.all()
-// })
+  // if(password) {
+  //     userUpdatePromise = db.updateUserWithPassword(...)
+  // } else {
+  //     userUpdatePromise = db.updateUserWithoutPassword(...)
+  // }
+
+  // userUpdatePromise.then(() => {
+  //     return db.upsertProfile(...)
+  // }).then(() => {
+  //     res.redirect("/petition")
+  // }).catch((err) => {
+  //     console.log(err)
+  // })
+
+  // If you feel adventorous, try to do this with Promise.all()
+});
 
 app.get("/logout", (req, res) => {
   req.session = null;
   return res.redirect("/register");
+});
+
+app.post("/signature-delete", (req, res) => {
+  console.log("We are in signature");
+  const userId = req.session.userID;
+
+  db.deleteSignature(userId)
+    .then(() => {
+      console.log("signature was deleted successfully");
+      //update the cookie
+
+      req.session.signatureId = null;
+      req.session.message = "Your signature has  successfully deleted. .";
+
+      return res.redirect("/petition");
+    })
+    .catch((err) => {
+      console.log("error in deleting signature", err);
+      res.sendStatus(500);
+    });
 });
 app.listen(8080, () => console.log("petition server is listening ..."));

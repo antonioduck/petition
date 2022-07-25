@@ -3,8 +3,7 @@
 
   <hi>Welcome to the petition </hi>
 
-  <P>In order to move forward , you need to sign up(with name , surmane and
-    signature ) and press the submit button</P>
+  <P>Please sign in order to see the total number of persons who signed the Petition</P>
 
   <p class=" errorm"> {{error.message}} </p>
 
@@ -21,10 +20,10 @@
       <canvas id="sig-canvas" width="620" height="160"></canvas>
       {{! <canvas id="canvas" width="300" height="80">Sign here</canvas> }}
       <input type="hidden" id="signature" name="signature" value="" /></br>
-      <label for="signature">Sign here</label>
+      {{!-- <label for="signature">Sign here</label> --}}
     </div>
 
-    <input id="submit" type="submit" value="Sign up" />
+    <input id="submit" type="submit" value="Sign up" class="btn"  />
 
   </form>
 
@@ -58,10 +57,11 @@
   </div>
   <br /> 
 
-   <div class="row">
+   {{!-- <div class="row">
     <div class="col-md-12">
       <img id="sig-image" src="" alt="Your signature will go here!" />
     </div>
-  </div>
+  </div> --}}
+  <a href="./logout">logout</a>
 
 </div> 
