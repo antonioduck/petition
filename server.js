@@ -49,8 +49,10 @@ app.get("/petition", (req, res) => {
 app.post("/petition", (req, res) => {
   const data = req.body;
   console.log(data);
+
   const userID = req.session.userID;
   db.addSignature(data.signature, userID)
+
     .then((Newdata) => {
       console.log("addSignature worked");
       //set the cookie
@@ -58,6 +60,7 @@ app.post("/petition", (req, res) => {
       //redirect if successful
       console.log("new data ", Newdata.rows[0].id);
       req.session.signatureId = Newdata.rows[0].id;
+      console.log("new signature made and we are going to the thank u page");
       res.redirect("/thank-you");
     })
     .catch((err) => {
@@ -99,6 +102,7 @@ app.get("/thank-you", (req, res) => {
 app.get("/signers", (req, res) => {
   db.getSigners()
     .then((result) => {
+      // console.log(result);
       if (req.session.userID) {
         console.log("Succesfully signed!");
         // console.log("result.rows.length: ", result.rows.length);
@@ -160,7 +164,7 @@ app.post("/register", (req, res) => {
       console.log("An error occured", err);
       const error = {
         message:
-          "something went wrong !!Are you sure , that u filled all fields properly?",
+          "Something went wrong !!Are you sure , that u filled all fields properly?",
       };
 
       res.render("register", {
@@ -189,21 +193,31 @@ app.post("/login", (req, res) => {
         .then((results) => {
           console.log("where the f... is the signature", results);
           if (results.rows[0]) {
+            console.log(
+              "results in post login GetSignaturesById",
+              results.rows[0].signature
+            );
+            //  req.session.signatureId = ;
             res.redirect("/thank-you");
           } else {
+            console.log("no signature found , we are going to petition");
             res.redirect("/petition");
           }
         })
         .catch((err) => {
           console.log("err in get signature at login", err);
-          res.render("login");
-          message: "Login failed";
+
+          res.render("login", { title: "error in login" });
         });
     })
     .catch((err) => {
-      console.log("err", err);
-      res.render("login");
-      message: "Login failed";
+      console.log("error in logging in ", err);
+
+      const error = {
+        message:
+          "Something went wrong !!Are you sure , that the e-mail and the password are correct?",
+      };
+      res.render("login", { title: "Error in login", error });
     });
 });
 

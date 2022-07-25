@@ -176,3 +176,22 @@ module.exports.getInfo = (user_id) => {
     [user_id]
   );
 };
+
+module.exports.updateUserWithPassword = (id, first, last, email, password) => {
+  return hashPassword(password).then((hashedPass) => {
+    console.log("hashed pass is", hashedPass);
+    return db.query(
+      `UPDATE users SET first=$2, last=$3, email=$4, password=$5 WHERE id=$1`,
+      [id, first, last, email, hashedPass]
+    );
+  });
+};
+
+module.exports.updateUserWithoutPassword = (id, first, last, email) => {
+  return db.query(`UPDATE users SET first=$2, last=$3, email=$4 WHERE id=$1`, [
+    id,
+    first,
+    last,
+    email,
+  ]);
+};
