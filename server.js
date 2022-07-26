@@ -262,6 +262,7 @@ app.post("/profile/edit", (req, res) => {
     console.log("the profile results are:", result.rows);
     res.redirect("/profile/edit");
   });
+
   // 1. Update the users table
   // a. with password
   // db.updateUserWithPassword
@@ -316,4 +317,6 @@ app.post("/signature-delete", (req, res) => {
       res.sendStatus(500);
     });
 });
-app.listen(8080, () => console.log("petition server is listening ..."));
+app.listen(process.env.PORT || 8080, () =>
+  console.log("petition server is listening ...")
+);
