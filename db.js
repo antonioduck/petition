@@ -3,7 +3,7 @@ const username = "postgres";
 const password = "postgres";
 const database = "petition";
 const db =
-  spicedPg(process.env.DATABASE_URL) ||
+  // spicedPg(process.env.DATABASE_URL) ||
   spicedPg(`postgres:${username}:${password}@localhost:5432/${database}`);
 const bcrypt = require("bcryptjs");
 
